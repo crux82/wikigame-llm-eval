@@ -1,0 +1,5 @@
+# INSERT YOUR API KEY HERE
+GPT_API_KEY = "Bearer sk-proj-..."
+
+# INSERT YOUR LLAMA ENDPOINT URL HERE
+LLAMA_ENDPOINT_URL = "http://ip:port/endpoint"
