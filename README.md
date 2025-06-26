@@ -12,7 +12,7 @@ This project provides a pipeline to evaluate Large Language Models (LLMs) on the
 
 1. **Clone the repository** (if not already done):
    ```bash
-   git clone <your-repo-url>
+   git clone https://github.com/crux82/wikigame-llm-eval.git
    cd wikigame-llm-eval
    ```
 
