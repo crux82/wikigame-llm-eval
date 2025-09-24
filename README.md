@@ -15,6 +15,8 @@ Many thanks to [**Daniele Margiotta**](https://scholar.google.it/citations?user=
 - [Setup](#setup)
 - [Usage](#usage)
 - [Citation](#citation)
+- [License](#license)
+- [Contact](#contact)
 
 ## Introduction
 This repository accompanies the CLiC-it 2025 paper and provides the full experimental pipeline used in the study.  
@@ -144,3 +146,10 @@ If you find this repository usefull, please cite the accompanying paper:
   address   = {Cagliari, Italy},
 }
 ```
+
+## License
+This project is licensed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).  
+See the `LICENSE` file for full details.
+
+## Contact
+For questions, feedback, or issues, please open a GitHub issue or contact me directly at **croce@info.uniroma2.it**
