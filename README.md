@@ -20,7 +20,8 @@ Many thanks to [**Daniele Margiotta**](https://scholar.google.it/citations?user=
 
 ## Introduction
 This repository accompanies the CLiC-it 2025 paper and provides the full experimental pipeline used in the study.  
-The goal is to offer a reproducible benchmark for testing Large Language Models (LLMs) on structured reasoning tasks and directly comparing them with human performance.
+Its purpose is to provide a **reproducible benchmark** for evaluating Large Language Models (LLMs) on the WikiGame - a task that requires not only factual recall, but also **structural reasoning**, **multi-hop navigation**, and adherence to the real hyperlink graph of Wikipedia.
+
 
 ### What is the WikiGame?
 The [WikiGame](https://www.thewikigame.com/) (also known as Wikipedia Speedrun or Wikirace) is a challenge where the objective is to navigate from a start Wikipedia page to a target page by clicking only valid internal hyperlinks.  
