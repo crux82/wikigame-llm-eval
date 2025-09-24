@@ -1,7 +1,5 @@
 # WikiGame LLM Evaluation Pipeline
 
-## Introduction
-
 This repository accompanies the paper “Evaluating Large Language Models on Wikipedia Graph Navigation: Insights from the WikiGame” (CLiC-it 2025) and provides the full experimental pipeline used in the study. It is designed as a reproducible benchmark for evaluating LLMs on the WikiGame task and comparing their performance against human players.
 
 The WikiGame challenges an agent to navigate from a start page to a target page by following only valid internal hyperlinks. This task probes not just factual knowledge, but also structural reasoning, multi-hop planning, and the ability to distinguish valid from invalid connections in the Wikipedia graph.
