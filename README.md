@@ -4,15 +4,14 @@ Official companion repository for the CLiC-it 2025 paper:
 “Evaluating Large Language Models on Wikipedia Graph Navigation: Insights from the WikiGame”.
 This repository provides a reproducible benchmark to evaluate LLMs on Wikipedia graph navigation and compare them to humans.
 
+Many thanks to [**Daniele Margiotta**](https://scholar.google.it/citations?user=3lyUOPgAAAAJ&hl=it), the major contributor of this pipeline.
+
 ## Table of Contents
 - [Introduction](#introduction)
   - [What is the WikiGame?](#what-is-the-wikigame)
   - [Why a Pipeline (and Prompt Templates)?](#why-a-pipeline-and-prompt-templates)
   - [What’s Inside](#whats-inside)
-- [Research Context and Goals](#research-context-and-goals)
-- [Experimental Settings (Summary)](#experimental-settings-summary)
-- [Models Evaluated (Paper)](#models-evaluated-paper)
-- [Pipeline Overview](#pipeline-overview)
+- [Experiment Details](#experiment-details)
 - [Setup](#setup)
 - [Usage](#usage)
 - [Citation](#citation)
@@ -43,24 +42,20 @@ Evaluating LLMs on the WikiGame is not a standard benchmark. The pipeline is nee
 - **Evaluation framework**: strict output formats + automatic parsing; metrics include success rate, invalid link/page rates, and path length.
 - **Results**: reproducible spreadsheets and analysis artifacts aligned with the paper.
 
-## Research Context and Goals
-- **Objective**: assess whether LLMs internalize Wikipedia’s structure and can solve graph navigation with or without local link cues.
-- **Human baseline**: ~4,000 WikiGame sessions processed to derive empirical difficulty. From each bin (Medium, Hard, Very Hard, Impossible), 30 games were sampled (Easy excluded) → 120 total pairs.
-- **Key questions**:
-  - How do models perform when blind to outgoing links?
-  - Does stepwise reasoning (CoT) help?
-  - How much do explicit outgoing links reduce structural errors?
+---
 
-## Experimental Settings (Summary)
+## Experiment Details
+
+**Experimental Settings**
 - **Blind (No Reasoning)**: Start/End only; output path as `Title1 -> Title2 -> ...`.
 - **Blind + Chain-of-Thought (CoT)**: explain reasoning, then output final path.
 - **Link-Aware (Stepwise Choice)**: at each step, see the real outgoing links and pick exactly one; output only the chosen title.
 
-## Models Evaluated (Paper)
+**Models Evaluated**
 - **OpenAI GPT-4 family**: `gpt-4.1`, `gpt-4.1-mini`, `gpt-4.1-nano`, `gpt-4o-mini`.
 - **Open-weight**: Llama 3.1-8B-Instruct (greedy decoding on local GPU).
 
-## Pipeline Overview
+**Pipeline Overview**
 The evaluation workflow is organized in three sequential stages. Each stage consumes the output of the previous one and produces standardized artifacts for the next step.
 
 | Step                      | Script                                   | Input → Output                              |
@@ -70,6 +65,8 @@ The evaluation workflow is organized in three sequential stages. Each stage cons
 | Run LLM Experiments       | `get_result_paper_wikigame.py`           | `dataset_paper.json` → `results_wikigame.xlsx` |
 
 This design makes the pipeline modular: users can either run the full process end-to-end or execute individual steps depending on their needs.
+
+---
 
 ## Setup
 
@@ -93,6 +90,7 @@ Credentials can be set in `api_key.py` or via environment variables:
 OPENAI_API_KEY=sk-...
 LLAMA_ENDPOINT_URL=http://ip:port/endpoint
 ```
+---
 
 ## Usage
 
@@ -131,8 +129,18 @@ Running the pipeline will produce:
 - Do not alter the prompt templates: the parser requires strict output formats.
 - Consider caching Wikipedia API calls to ensure consistency across runs.
 
+---
+
 ## Citation
-If you use this repository, please cite the accompanying paper:
+If you find this repository usefull, please cite the accompanying paper:
 ```
-coming soon
+@inproceedings{margiotta2025wikigame,
+  author    = {Daniele Margiotta and Danilo Croce and Roberto Basili},
+  title     = {Evaluating Large Language Models on Wikipedia Graph Navigation: Insights from the WikiGame},
+  booktitle = {Proceedings of the 11th Italian Conference on Computational Linguistics (CLiC-it 2025)},
+  series    = {CEUR Workshop Proceedings},
+  publisher = {CEUR},
+  year      = {2025},
+  address   = {Cagliari, Italy},
+}
 ```
