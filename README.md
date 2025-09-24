@@ -4,16 +4,9 @@ This repository accompanies the paper “Evaluating Large Language Models on Wik
 
 The WikiGame challenges an agent to navigate from a start page to a target page by following only valid internal hyperlinks. This task probes not just factual knowledge, but also structural reasoning, multi-hop planning, and the ability to distinguish valid from invalid connections in the Wikipedia graph.
 
-By running this repository, you will find:
-- Datasets: human gameplay logs (~4,000 sessions) and a curated evaluation set of 120 start–goal pairs stratified by difficulty.
-- Pipeline scripts: to preprocess data, build evaluation sets, and run controlled experiments with LLMs.
-- Prompt templates: for the three experimental conditions (Blind, Blind + Chain-of-Thought, Link-Aware).
-- Evaluation framework: automated parsing of model outputs with metrics such as success rate, error typology (invalid links/pages), and path length efficiency.
-- Results: reproducible spreadsheets and analysis artifacts, directly aligned with the findings reported in the paper.
-
 In short, this repository is both the official companion to the publication and a practical toolkit for probing whether LLMs truly internalize Wikipedia’s structure or merely rely on surface-level recall.
 
-### Why generate data?
+## Why generate data?
 
 Generating and preprocessing data is essential to:
 - Derive a robust human baseline from ~4,000 WikiGame sessions and quantify empirical difficulty.
@@ -22,7 +15,7 @@ Generating and preprocessing data is essential to:
 - Compute ground-truth structural signals (e.g., which links exist) for error analysis (invalid links vs nonexistent pages).
 - Support Link-Aware experiments by extracting the real outgoing links at each step.
 
-### Why WikiGame?
+## Why WikiGame?
 
 Wikipedia can be modeled as a directed graph of articles and hyperlinks. The WikiGame challenges an agent to navigate from a start page to a target page by following valid internal links. This task probes:
 - **Structural knowledge**: Does the model know which links truly exist between pages?
@@ -40,31 +33,28 @@ The paper reports a controlled comparison between humans and multiple LLMs acros
   - Does stepwise reasoning help?
   - How much do explicit outgoing links reduce structural errors?
 
-## Experimental Settings (summarized)
+## Experimental Settings
 
 - **Blind (No Reasoning)**: Model sees only Start and End titles; outputs a path (titles separated by `->`).
 - **Blind + Chain-of-Thought (CoT)**: As above, but the model first explains decisions step-by-step, then outputs the final path.
 - **Link-Aware (Stepwise Choice)**: At each step the model is shown the real outgoing links from the current page and must pick exactly one. Output is only the chosen title, no reasoning.
 
-Full prompt templates are included in `main.tex` (Appendix) and mirrored in the project’s `prompts.py`.
+# Setup
 
-## Models Evaluated (paper)
+## Project Structure
+- `main.sh` — Main pipeline script
+- `get_statistics_dataset_complete_wikigame.py` — Human statistics extraction
+- `create_dataset_paper_wikigame.py` — Dataset creation for LLM evaluation
+- `get_result_paper_wikigame.py` — LLM experiment runner
+- `wikigametools.py` — Wikipedia parsing and link utilities
+- `prompts.py` — Prompt templates and constructors
+- `api_key.py` — API keys and endpoint configuration
+- `settings.py` — Experiment settings
+- `dataset/` — Input and intermediate datasets
+- `statistics/` — Output folder for statistics
+- `results/` — Output folder for experiment results
 
-- **OpenAI GPT-4 family**: `gpt-4.1`, `gpt-4.1-mini`, `gpt-4.1-nano`, `gpt-4o-mini` (temperature 0 for reproducibility).
-- **Open-weight**: Llama 3.1-8B-Instruct (greedy decoding on local GPU).
-
-## Key Results (high level)
-
-- **Success rate**:
-  - In Blind settings, only the largest model (GPT-4.1) approaches or matches human performance on easier bins; performance declines with model size.
-  - In Link-Aware mode, access to outgoing links dramatically boosts accuracy for GPT models; GPT-4.1 reaches near-perfect (up to 100%) even on the hardest tasks. Llama 3.1-8B benefits less.
-- **Dominant error mode (Blind/CoT)**: **Invalid links** (transitions between two real pages without an actual hyperlink). Hallucinated pages are rarer (<10% for most models/settings).
-- **Effect of CoT**: Mixed. It seldom reduces invalid links and can sometimes increase them (overgeneration) in smaller models; helps in specific cases for Llama.
-- **Navigation efficiency**: Blind paths are often shorter than human paths but frequently rely on invalid shortcuts. Link-Aware paths are longer but structurally valid and closer to human-like navigation.
-
-These findings suggest large LLMs internalize broad aspects of Wikipedia’s structure but still possess “patchy” global maps. Providing explicit link context closes most gaps, particularly for larger GPT variants.
-
-## Pipeline Overview
+## Pipeline Steps
 
 `main.sh` orchestrates three steps:
 
@@ -88,15 +78,13 @@ These findings suggest large LLMs internalize broad aspects of Wikipedia’s str
 
 All intermediate and final artifacts are saved under `statistics`, `dataset`, and `results`.
 
-## Setup
-
-### Prerequisites
+## Prerequisites
 
 - **Python 3.8+**
 - **pip**
 - **Internet connection** (Wikipedia API and LLM endpoints)
 
-### Install
+## Install
 
 1. Clone the repository:
    ```bash
@@ -135,29 +123,7 @@ Outputs:
 
 You can adjust the number of games, max steps, and other parameters in `settings.py`.
 
-## Implementation Notes
-
-- Wikipedia utilities are in `wikigametools.py`, including:
-  - `is_disambiguation_page(title)`
-  - `get_internal_links_from_article(title)`
-  - `get_all_visible_existing_internal_links(title, steps)`
-- Prompts for the three settings are specified in `main.tex` (Appendix) and programmatically constructed in `prompts.py`.
-- The pipeline enforces strict output formats to automatically parse model responses and compute metrics.
-
-## Project Structure
-- `main.sh` — Main pipeline script
-- `get_statistics_dataset_complete_wikigame.py` — Human statistics extraction
-- `create_dataset_paper_wikigame.py` — Dataset creation for LLM evaluation
-- `get_result_paper_wikigame.py` — LLM experiment runner
-- `wikigametools.py` — Wikipedia parsing and link utilities
-- `prompts.py` — Prompt templates and constructors
-- `api_key.py` — API keys and endpoint configuration
-- `settings.py` — Experiment settings
-- `dataset/` — Input and intermediate datasets
-- `statistics/` — Output folder for statistics
-- `results/` — Output folder for experiment results
-
-## Interpreting Results (guide)
+## Interpreting Results
 
 - **Success Rate**: fraction of tasks where the model reaches the goal via valid links.
 - **Invalid Link Rate**: path contains at least one step between existing pages without an actual hyperlink (dominant Blind error).
@@ -165,6 +131,17 @@ You can adjust the number of games, max steps, and other parameters in `settings
 - **Avg Path Length (± st.dev.)**: computed over successful paths; Blind tends to be shorter (but riskier), Link-Aware longer (but valid).
 
 When comparing to humans: human performance drops with difficulty; large GPT models match or exceed humans primarily when link options are visible.
+
+## Key Results
+
+- **Success rate**:
+  - In Blind settings, only the largest model (GPT-4.1) approaches or matches human performance on easier bins; performance declines with model size.
+  - In Link-Aware mode, access to outgoing links dramatically boosts accuracy for GPT models; GPT-4.1 reaches near-perfect (up to 100%) even on the hardest tasks. Llama 3.1-8B benefits less.
+- **Dominant error mode (Blind/CoT)**: **Invalid links** (transitions between two real pages without an actual hyperlink). Hallucinated pages are rarer (<10% for most models/settings).
+- **Effect of CoT**: Mixed. It seldom reduces invalid links and can sometimes increase them (overgeneration) in smaller models; helps in specific cases for Llama.
+- **Navigation efficiency**: Blind paths are often shorter than human paths but frequently rely on invalid shortcuts. Link-Aware paths are longer but structurally valid and closer to human-like navigation.
+
+These findings suggest large LLMs internalize broad aspects of Wikipedia’s structure but still possess “patchy” global maps. Providing explicit link context closes most gaps, particularly for larger GPT variants.
 
 ## Citation
 
