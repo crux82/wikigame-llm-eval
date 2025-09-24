@@ -4,6 +4,19 @@ Official companion repository for the CLiC-it 2025 paper:
 “Evaluating Large Language Models on Wikipedia Graph Navigation: Insights from the WikiGame”.
 This repository provides a reproducible benchmark to evaluate LLMs on Wikipedia graph navigation and compare them to humans.
 
+## Table of Contents
+- [Introduction](#introduction)
+  - [What is the WikiGame?](#what-is-the-wikigame)
+  - [Why a Pipeline (and Prompt Templates)?](#why-a-pipeline-and-prompt-templates)
+  - [What’s Inside](#whats-inside)
+- [Research Context and Goals](#research-context-and-goals)
+- [Experimental Settings (Summary)](#experimental-settings-summary)
+- [Models Evaluated (Paper)](#models-evaluated-paper)
+- [Pipeline Overview](#pipeline-overview)
+- [Setup](#setup)
+- [Usage](#usage)
+- [Citation](#citation)
+
 ## Introduction
 This repository accompanies the CLiC-it 2025 paper and provides the full experimental pipeline used in the study.  
 The goal is to offer a reproducible benchmark for testing Large Language Models (LLMs) on structured reasoning tasks and directly comparing them with human performance.
