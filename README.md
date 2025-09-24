@@ -1,153 +1,125 @@
 # WikiGame LLM Evaluation Pipeline
 
-This repository accompanies the paper “Evaluating Large Language Models on Wikipedia Graph Navigation: Insights from the WikiGame” (CLiC-it 2025) and provides the full experimental pipeline used in the study. It is designed as a reproducible benchmark for evaluating LLMs on the WikiGame task and comparing their performance against human players.
+Official companion repository for the CLiC-it 2025 paper:
+“Evaluating Large Language Models on Wikipedia Graph Navigation: Insights from the WikiGame”.
+This repository provides a reproducible benchmark to evaluate LLMs on Wikipedia graph navigation and compare them to humans.
 
-The WikiGame challenges an agent to navigate from a start page to a target page by following only valid internal hyperlinks. This task probes not just factual knowledge, but also structural reasoning, multi-hop planning, and the ability to distinguish valid from invalid connections in the Wikipedia graph.
+## Introduction
+This repository accompanies the CLiC-it 2025 paper and provides the full experimental pipeline used in the study.  
+The goal is to offer a reproducible benchmark for testing Large Language Models (LLMs) on structured reasoning tasks and directly comparing them with human performance.
 
-In short, this repository is both the official companion to the publication and a practical toolkit for probing whether LLMs truly internalize Wikipedia’s structure or merely rely on surface-level recall.
+### What is the WikiGame?
+The [WikiGame](https://www.thewikigame.com/) (also known as Wikipedia Speedrun or Wikirace) is a challenge where the objective is to navigate from a start Wikipedia page to a target page by clicking only valid internal hyperlinks.  
+This probes:
+- **Structural knowledge**: do models know which links actually exist?
+- **Multi-hop reasoning & planning**: can they compose paths rather than rely on isolated fact recall?
+- **Generalization vs. memorization**: do they invent plausible but invalid shortcuts or adhere to the real graph?
 
-## Why generate data?
+### Why a Pipeline (and Prompt Templates)?
+Evaluating LLMs on the WikiGame is not a standard benchmark. The pipeline is needed to:
+- Derive a human baseline and difficulty bins from ~4,000 real games.
+- Build a stratified, cost-manageable evaluation set (120 start--goal pairs).
+- Run models under three controlled settings (Blind, Blind+CoT, Link-Aware) with strict, parseable outputs.
+- Validate model paths against Wikipedia to detect invalid links vs nonexistent pages.
+- Provide consistent prompts to guarantee comparability across models and runs.
 
-Generating and preprocessing data is essential to:
-- Derive a robust human baseline from ~4,000 WikiGame sessions and quantify empirical difficulty.
-- Build a controlled, stratified evaluation set (120 start–goal pairs) that is reproducible and cost-manageable.
-- Provide standardized inputs and strict output formats so model results can be parsed automatically and compared fairly across settings and models.
-- Compute ground-truth structural signals (e.g., which links exist) for error analysis (invalid links vs nonexistent pages).
-- Support Link-Aware experiments by extracting the real outgoing links at each step.
-
-## Why WikiGame?
-
-Wikipedia can be modeled as a directed graph of articles and hyperlinks. The WikiGame challenges an agent to navigate from a start page to a target page by following valid internal links. This task probes:
-- **Structural knowledge**: Does the model know which links truly exist between pages?
-- **Reasoning and planning**: Can it compose multi-hop paths rather than rely on isolated fact recall?
-- **Generalization vs memorization**: Do models reconstruct plausible yet invalid shortcuts, or adhere to the real graph?
-
-The paper reports a controlled comparison between humans and multiple LLMs across increasing information settings, with success rate, error types, and path efficiency as core metrics.
+### What’s Inside
+- **Datasets**: human gameplay logs (~4,000 sessions) and a curated set of 120 start--goal pairs.
+- **Pipeline scripts**: for preprocessing, dataset construction, and controlled LLM experiments.
+- **Prompt templates**: for Blind, Blind+Chain-of-Thought, and Link-Aware settings (in `prompts.py`).
+- **Evaluation framework**: strict output formats + automatic parsing; metrics include success rate, invalid link/page rates, and path length.
+- **Results**: reproducible spreadsheets and analysis artifacts aligned with the paper.
 
 ## Research Context and Goals
-
-- **Objective**: Assess whether LLMs internalize Wikipedia’s structure and can solve graph navigation without or with local structural cues.
-- **Human baseline**: ~4,000 WikiGame sessions scraped from the public platform were analyzed to derive empirical difficulty. A 120-pair evaluation set was built by sampling 30 games from each bin: Medium, Hard, Very Hard, Impossible (Easy was excluded due to scarcity).
+- **Objective**: assess whether LLMs internalize Wikipedia’s structure and can solve graph navigation with or without local link cues.
+- **Human baseline**: ~4,000 WikiGame sessions processed to derive empirical difficulty. From each bin (Medium, Hard, Very Hard, Impossible), 30 games were sampled (Easy excluded) → 120 total pairs.
 - **Key questions**:
-  - How do models perform when “blind” to outgoing links?
-  - Does stepwise reasoning help?
+  - How do models perform when blind to outgoing links?
+  - Does stepwise reasoning (CoT) help?
   - How much do explicit outgoing links reduce structural errors?
 
-## Experimental Settings
+## Experimental Settings (Summary)
+- **Blind (No Reasoning)**: Start/End only; output path as `Title1 -> Title2 -> ...`.
+- **Blind + Chain-of-Thought (CoT)**: explain reasoning, then output final path.
+- **Link-Aware (Stepwise Choice)**: at each step, see the real outgoing links and pick exactly one; output only the chosen title.
 
-- **Blind (No Reasoning)**: Model sees only Start and End titles; outputs a path (titles separated by `->`).
-- **Blind + Chain-of-Thought (CoT)**: As above, but the model first explains decisions step-by-step, then outputs the final path.
-- **Link-Aware (Stepwise Choice)**: At each step the model is shown the real outgoing links from the current page and must pick exactly one. Output is only the chosen title, no reasoning.
+## Models Evaluated (Paper)
+- **OpenAI GPT-4 family**: `gpt-4.1`, `gpt-4.1-mini`, `gpt-4.1-nano`, `gpt-4o-mini`.
+- **Open-weight**: Llama 3.1-8B-Instruct (greedy decoding on local GPU).
 
-# Setup
+## Pipeline Overview
+The evaluation workflow is organized in three sequential stages. Each stage consumes the output of the previous one and produces standardized artifacts for the next step.
 
-## Project Structure
-- `main.sh` — Main pipeline script
-- `get_statistics_dataset_complete_wikigame.py` — Human statistics extraction
-- `create_dataset_paper_wikigame.py` — Dataset creation for LLM evaluation
-- `get_result_paper_wikigame.py` — LLM experiment runner
-- `wikigametools.py` — Wikipedia parsing and link utilities
-- `prompts.py` — Prompt templates and constructors
-- `api_key.py` — API keys and endpoint configuration
-- `settings.py` — Experiment settings
-- `dataset/` — Input and intermediate datasets
-- `statistics/` — Output folder for statistics
-- `results/` — Output folder for experiment results
+| Step                      | Script                                   | Input → Output                              |
+|---------------------------|------------------------------------------|---------------------------------------------|
+| Generate Human Statistics | `get_statistics_dataset_complete_wikigame.py` | `dataset_wiki_game_complete.json` → `wikigame_statistics.xlsx` |
+| Create Paper Dataset      | `create_dataset_paper_wikigame.py`       | `wikigame_statistics.xlsx` → `dataset_paper.json` |
+| Run LLM Experiments       | `get_result_paper_wikigame.py`           | `dataset_paper.json` → `results_wikigame.xlsx` |
 
-## Pipeline Steps
+This design makes the pipeline modular: users can either run the full process end-to-end or execute individual steps depending on their needs.
 
-`main.sh` orchestrates three steps:
+## Setup
 
-1. **Generate Human Statistics**
-   - Script: `get_statistics_dataset_complete_wikigame.py`
-   - Input: `./dataset/dataset_wiki_game_complete.json`
-   - Output: `./statistics/wikigame_statistics.xlsx`
-   - Description: Computes human performance stats and difficulty bins.
+### Prerequisites
+- Python 3.8 or later
+- pip
+- Internet connection (Wikipedia API + LLM endpoints)
 
-2. **Create Paper Dataset**
-   - Script: `create_dataset_paper_wikigame.py`
-   - Input: `./statistics/wikigame_statistics.xlsx`
-   - Output: `./dataset/dataset_paper.json`
-   - Description: Builds the 120 start–goal pairs stratified by difficulty.
+### Install
+```bash
+git clone https://github.com/crux82/wikigame-llm-eval.git
+cd wikigame-llm-eval
+pip install -r requirements.txt
+```
 
-3. **Run LLM Experiments**
-   - Script: `get_result_paper_wikigame.py`
-   - Input: `./dataset/dataset_paper.json`
-   - Output: `./results/results_wikigame.xlsx`
-   - Description: Evaluates models under the three settings; collects success, path length, and error metrics.
+### Configure Credentials
+Credentials can be set in `api_key.py` or via environment variables:
 
-All intermediate and final artifacts are saved under `statistics`, `dataset`, and `results`.
-
-## Prerequisites
-
-- **Python 3.8+**
-- **pip**
-- **Internet connection** (Wikipedia API and LLM endpoints)
-
-## Install
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/crux82/wikigame-llm-eval.git
-   cd wikigame-llm-eval
-   ```
-
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-   If needed, ensure the following are available: `pandas`, `requests`, `beautifulsoup4`, `openpyxl`.
-
-3. Configure API keys and endpoints in `api_key.py`:
-   ```python
-   GPT_API_KEY = "Bearer sk-..."
-   LLAMA_ENDPOINT_URL = "http://ip:port/endpoint"
-   ```
-   - `GPT_API_KEY`: your OpenAI key with the `Bearer ` prefix.
-   - `LLAMA_ENDPOINT_URL`: your local/remote Llama 3.1-8B endpoint.
-
-   Important: the pipeline will not run without valid credentials.
+```bash
+# .env (example)
+OPENAI_API_KEY=sk-...
+LLAMA_ENDPOINT_URL=http://ip:port/endpoint
+```
 
 ## Usage
 
-Run the full pipeline:
-
+### Quick Start
+To execute the entire pipeline end-to-end:
 ```bash
 bash main.sh
 ```
+This will compute human statistics, create the paper dataset of 120 start--goal pairs, and run the LLM experiments under all settings.
 
-Outputs:
-- Results spreadsheet: `./results/results_wikigame.xlsx`
-- Intermediate stats: `./statistics/wikigame_statistics.xlsx`
-- Evaluation set: `./dataset/dataset_paper.json`
+### Run Individual Steps
+Each step can also be run separately:
+```bash
+# Compute human statistics
+python get_statistics_dataset_complete_wikigame.py
 
-You can adjust the number of games, max steps, and other parameters in `settings.py`.
+# Build evaluation dataset
+python create_dataset_paper_wikigame.py
 
-## Interpreting Results
+# Run LLM experiments
+python get_result_paper_wikigame.py
+```
 
-- **Success Rate**: fraction of tasks where the model reaches the goal via valid links.
-- **Invalid Link Rate**: path contains at least one step between existing pages without an actual hyperlink (dominant Blind error).
-- **Invalid Page Rate**: path contains at least one non-existent page (rarer).
-- **Avg Path Length (± st.dev.)**: computed over successful paths; Blind tends to be shorter (but riskier), Link-Aware longer (but valid).
+### Configurable Parameters
+- Number of games, maximum steps per path, and model decoding options are defined in `settings.py`.
+- API credentials must be set before running experiments.
 
-When comparing to humans: human performance drops with difficulty; large GPT models match or exceed humans primarily when link options are visible.
+### Outputs
+Running the pipeline will produce:
+- `./statistics/wikigame_statistics.xlsx` — human baseline statistics and difficulty bins.
+- `./dataset/dataset_paper.json` — stratified evaluation set of 120 start--goal pairs.
+- `./results/results_wikigame.xlsx` — aggregated model performance results.
 
-## Key Results
-
-- **Success rate**:
-  - In Blind settings, only the largest model (GPT-4.1) approaches or matches human performance on easier bins; performance declines with model size.
-  - In Link-Aware mode, access to outgoing links dramatically boosts accuracy for GPT models; GPT-4.1 reaches near-perfect (up to 100%) even on the hardest tasks. Llama 3.1-8B benefits less.
-- **Dominant error mode (Blind/CoT)**: **Invalid links** (transitions between two real pages without an actual hyperlink). Hallucinated pages are rarer (<10% for most models/settings).
-- **Effect of CoT**: Mixed. It seldom reduces invalid links and can sometimes increase them (overgeneration) in smaller models; helps in specific cases for Llama.
-- **Navigation efficiency**: Blind paths are often shorter than human paths but frequently rely on invalid shortcuts. Link-Aware paths are longer but structurally valid and closer to human-like navigation.
-
-These findings suggest large LLMs internalize broad aspects of Wikipedia’s structure but still possess “patchy” global maps. Providing explicit link context closes most gaps, particularly for larger GPT variants.
+### Tips for Reproducibility
+- Use `temperature = 0` (OpenAI) or greedy decoding (open-weight models) for deterministic outputs.
+- Do not alter the prompt templates: the parser requires strict output formats.
+- Consider caching Wikipedia API calls to ensure consistency across runs.
 
 ## Citation
-
 If you use this repository, please cite the accompanying paper:
 ```
 coming soon
 ```
-
-Links to dataset artifacts and the camera-ready paper will be added upon publication.
