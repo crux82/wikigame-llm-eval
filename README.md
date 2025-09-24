@@ -1,14 +1,37 @@
-## WikiGame LLM Evaluation Pipeline
+# WikiGame LLM Evaluation Pipeline
 
-This repository contains a full, reproducible pipeline to evaluate Large Language Models (LLMs) on the WikiGame (Wikipedia Speedrun) task. The pipeline automates data preparation, experiment execution, and result collection via `main.sh`.
+## Introduction
+
+This repository accompanies the paper “Evaluating Large Language Models on Wikipedia Graph Navigation: Insights from the WikiGame” (CLiC-it 2025) and provides the full experimental pipeline used in the study. It is designed as a reproducible benchmark for evaluating LLMs on the WikiGame task and comparing their performance against human players.
+
+The WikiGame challenges an agent to navigate from a start page to a target page by following only valid internal hyperlinks. This task probes not just factual knowledge, but also structural reasoning, multi-hop planning, and the ability to distinguish valid from invalid connections in the Wikipedia graph.
+
+By running this repository, you will find:
+- Datasets: human gameplay logs (~4,000 sessions) and a curated evaluation set of 120 start–goal pairs stratified by difficulty.
+- Pipeline scripts: to preprocess data, build evaluation sets, and run controlled experiments with LLMs.
+- Prompt templates: for the three experimental conditions (Blind, Blind + Chain-of-Thought, Link-Aware).
+- Evaluation framework: automated parsing of model outputs with metrics such as success rate, error typology (invalid links/pages), and path length efficiency.
+- Results: reproducible spreadsheets and analysis artifacts, directly aligned with the findings reported in the paper.
+
+In short, this repository is both the official companion to the publication and a practical toolkit for probing whether LLMs truly internalize Wikipedia’s structure or merely rely on surface-level recall.
+
+### Why generate data?
+
+Generating and preprocessing data is essential to:
+- Derive a robust human baseline from ~4,000 WikiGame sessions and quantify empirical difficulty.
+- Build a controlled, stratified evaluation set (120 start–goal pairs) that is reproducible and cost-manageable.
+- Provide standardized inputs and strict output formats so model results can be parsed automatically and compared fairly across settings and models.
+- Compute ground-truth structural signals (e.g., which links exist) for error analysis (invalid links vs nonexistent pages).
+- Support Link-Aware experiments by extracting the real outgoing links at each step.
 
 ### Why WikiGame?
+
 Wikipedia can be modeled as a directed graph of articles and hyperlinks. The WikiGame challenges an agent to navigate from a start page to a target page by following valid internal links. This task probes:
 - **Structural knowledge**: Does the model know which links truly exist between pages?
 - **Reasoning and planning**: Can it compose multi-hop paths rather than rely on isolated fact recall?
 - **Generalization vs memorization**: Do models reconstruct plausible yet invalid shortcuts, or adhere to the real graph?
 
-The paper (`main.tex`) reports a controlled comparison between humans and multiple LLMs across increasing information settings, with success rate, error types, and path efficiency as core metrics.
+The paper reports a controlled comparison between humans and multiple LLMs across increasing information settings, with success rate, error types, and path efficiency as core metrics.
 
 ## Research Context and Goals
 
